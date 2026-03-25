@@ -66,6 +66,20 @@ Each chunk stored with ID `{filename}_{chunk_index}_{page_number}` and metadata:
 
 ## Important Notes
 
-- `chroma_manager.py` and `pdf_processor.py` are shared with the parent ChromaDB Navigator GUI app — changes affect both projects
-- The `requirements.uv` file is auto-generated; edit `requirements.txt` for dependency changes
+
 - OCR requires `tesseract` binary installed on the system
+
+- Below is how to configure the MCP with Claude in `claude_desktop_config.json`
+```
+    "research-assistant": {                                                                                
+      "command": "/opt/homebrew/bin/uv",                    
+      "args": [                                                                                            
+        "--directory", "/Users/hanisaf/Projects/research-assistant-mcp",
+        "run", "python",                                                                                   
+        "/Users/hanisaf/Projects/research-assistant-mcp/research-assistant.py",                            
+        "--library_directory", "/Users/hanisaf/Documents/Mendeley_Desktop",                                
+        "--chroma_db_path", "/Users/hanisaf/Documents/Mendeley_Chroma",                                    
+        "--limit_text", "-1"                                
+      ],                                                                                                   
+      "env": {}                                             
+    }```

@@ -1,0 +1,23 @@
+[project]
+name = "research-assistant-mcp"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "pypdf",
+    "chromadb==1.0.20",
+    "pydantic>=2.0.0",
+    "fastmcp>=0.2.0",
+    "PyMuPDF>=1.23.0",
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0.0",
+    "sentence-transformers==2.2.2",
+    "huggingface-hub==0.16.4",
+    "python-dateutil==2.8.2",
+    "numpy<2.0.0",
+    "torch>=2.0.0",
+]
+
+[tool.uv]
+# Pin torch to CPU-only build on non-Linux to avoid pulling CUDA wheels
+# Remove the override below if you want CUDA support

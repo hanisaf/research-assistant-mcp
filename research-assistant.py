@@ -43,10 +43,17 @@ parser.add_argument(
 args = parser.parse_args()
 
 # System prompt for research assistant
-SYSTEM_PROMPT = """If available, use the research assistant tools and cite the sources using APA style (Author year). Refer to information from the sources and do not make things up."""
+SYSTEM_PROMPT = """This server provides access to a pre-indexed library of PDF documents. The PDFs are already loaded and searchable — no file uploads are needed.
+
+Workflow:
+1. Use search_content to find relevant documents by topic (semantic search against the full library).
+2. Use search_title to find documents by author name or title keywords.
+3. Use read_pdf_text (with the file path from search results) to read specific pages.
+
+Always cite sources using APA style (Author, year). Only use information found in the library — do not make things up."""
 
 # Initialize server
-mcp = FastMCP(description)
+mcp = FastMCP(description, instructions=SYSTEM_PROMPT)
 
 # Initialize ChromaDB client
 chroma_manager: Optional[ChromaManager] = None
@@ -669,8 +676,9 @@ def analyze_pdf_structure(file_path: str) -> Dict[str, Any]:
 @mcp.tool()
 def search_title(query: str, top_n: int = 10) -> Dict[str, Any]:
     """
-    Select the single most relevant files by counting token overlap
-    between the query and the file name. Returns a ranked list.
+    Search the pre-indexed PDF library by author name or title keywords.
+    No file path or upload needed — searches filenames of all documents in the library.
+    Returns a ranked list with file paths you can pass to read_pdf_text.
     Useful for searching for an author.
     
     Args:
@@ -730,9 +738,10 @@ def search_title(query: str, top_n: int = 10) -> Dict[str, Any]:
 @mcp.tool()
 def search_content(query: str, max_num_chunks: int = 25, max_num_files: int = 5) -> Dict[str, Any]:
     """
-    Select the most relevant resources using vector similarity search
-    against content of the resources. Returns ranked results based on
-    semantic similarity to the query.
+    Search the pre-indexed PDF library by topic using vector similarity search.
+    No file path or upload needed — searches all documents already in the library.
+    Returns ranked results with file paths and matching page numbers.
+    Use the returned file paths with read_pdf_text to read the actual content.
     Useful for searching for a topic.
     
     Args:
