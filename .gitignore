@@ -3,6 +3,8 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+test_data/
+
 .env
 .DS_Store
 

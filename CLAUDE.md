@@ -70,6 +70,9 @@ Each chunk stored with ID `{filename}_{chunk_index}_{page_number}` and metadata:
 - OCR requires `tesseract` binary installed on the system
 
 - Below is how to configure the MCP with Claude in `claude_desktop_config.json`
+
+Mac
+
 ```
     "research-assistant": {                                                                                
       "command": "/opt/homebrew/bin/uv",                    
@@ -83,3 +86,24 @@ Each chunk stored with ID `{filename}_{chunk_index}_{page_number}` and metadata:
       ],                                                                                                   
       "env": {}                                             
     }```
+
+Windows
+
+```
+    "research assistant": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:\\Users\\hanisaf\\Projects\\research-assistant-mcp",
+        "run", "python",
+        "research-assistant.py",
+        "--library_directory",
+        "C:\\Users\\hanisaf\\Documents\\Mendeley_Desktop",
+        "--chroma_db_path",
+        "C:\\Users\\hanisaf\\Documents\\Mendeley_Chroma",
+        "--limit_text",
+        "-1"
+      ],
+      "env": {}
+    }
+```
