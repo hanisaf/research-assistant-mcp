@@ -125,16 +125,22 @@ class ChromaManager:
         # Get existing files in database
         existing_files = self._get_existing_files()
         
-        # Get current files in folder
+        # Get current files in folder (recursively)
         current_files = []
-        
-        for filename in sorted(os.listdir(folder_path)):  # Sort alphabetically
-            if filename.lower().endswith('.pdf'):
-                current_files.append(filename)
-        
+        for dirpath, _, filenames in os.walk(folder_path):
+            for filename in filenames:
+                if filename.lower().endswith('.pdf'):
+                    rel_path = os.path.relpath(os.path.join(dirpath, filename), folder_path)
+                    current_files.append(rel_path)
+        current_files = sorted(current_files)
+
+        current_basenames = {os.path.basename(f) for f in current_files}
+
         # Find new, removed, and modified files
-        new_files = [f for f in current_files if f not in existing_files]
-        removed_files = [f for f in existing_files if f not in current_files]
+        # new_files stores relative paths so sync_database can build the full filepath
+        # removed_files stores basenames to match what _remove_files_from_db queries
+        new_files = [f for f in current_files if os.path.basename(f) not in existing_files]
+        removed_files = [f for f in existing_files if f not in current_basenames]
         
         return {
             'new_files': new_files,
