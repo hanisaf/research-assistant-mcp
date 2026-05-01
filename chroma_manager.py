@@ -55,12 +55,20 @@ class ChromaManager:
             # Initialize embedding model with optimal device
             self.device = self._get_optimal_device()
             self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device=self.device)
-            
-            # For Metal/MPS, we may need to set additional optimizations
-            if self.device == "mps":
-                # Enable Metal optimizations if available
+
+            # Validate the model actually runs on the selected device
+            if self.device == "cuda":
                 try:
-                    # Set model to use Metal backend
+                    self.embedding_model = self.embedding_model.to(self.device)
+                    # Run a small test to confirm CUDA works end-to-end
+                    self.embedding_model.encode(["test"], show_progress_bar=False)
+                    print("Successfully verified CUDA embedding model")
+                except Exception as e:
+                    print(f"Warning: Could not use CUDA for embeddings, falling back to CPU: {e}")
+                    self.device = "cpu"
+                    self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device="cpu")
+            elif self.device == "mps":
+                try:
                     self.embedding_model = self.embedding_model.to(self.device)
                     print("Successfully moved embedding model to Metal device")
                 except Exception as e:
@@ -69,6 +77,7 @@ class ChromaManager:
                     self.device = "cpu"
                     self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device="cpu")
             
+            print(f"ChromaManager initialized — embedding device: {self.device}")
         except Exception as e:
             raise Exception(f"Failed to initialize ChromaDB: {str(e)}")
     
@@ -262,10 +271,14 @@ class ChromaManager:
             }
             metadatas.append(metadata)
         
+        # Generate embeddings using GPU-accelerated model
+        embeddings = self.embedding_model.encode(texts, show_progress_bar=True).tolist()
+
         # Add to database - ChromaDB 0.3.25 syntax
         self.collection.add(
             ids=ids,
             documents=texts,
+            embeddings=embeddings,
             metadatas=metadatas
         )
     
@@ -281,9 +294,12 @@ class ChromaManager:
                     if value:
                         where_clause[key] = value
             
+            # Generate query embedding using GPU-accelerated model
+            query_embedding = self.embedding_model.encode([query], show_progress_bar=False).tolist()
+
             # Perform search - ChromaDB 0.3.25 syntax
             results = self.collection.query(
-                query_texts=[query],
+                query_embeddings=query_embedding,
                 n_results=n_results,
                 where=where_clause,
                 include=['documents', 'metadatas', 'distances']
